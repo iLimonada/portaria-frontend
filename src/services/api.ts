@@ -1,10 +1,10 @@
 // src/services/api.ts
 import axios from 'axios';
-import { Morador } from '../types/morador';
+import { Morador } from '../types/morador';// Certifique-se de que esta variável esteja definida no seu arquivo .env
 
 const api = axios.create({
-  baseURL: 'http://192.168.0.32:8000', // Altere para a URL do seu backend
-  timeout: 5000, // Tempo limite para requisições
+  baseURL: process.env.EXPO_PUBLIC_API_URL, // Altere para a URL do seu backend (IPV4) 
+  timeout: 5000, 
   headers: {
     'Content-Type': 'application/json',
   },
