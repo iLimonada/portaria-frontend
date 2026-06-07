@@ -28,6 +28,24 @@ export const buscarMoradores = async (): Promise<Morador[]> => {
   }
 };
 
+export type criarMoradorInput = {
+  resident_name: string;
+  block: string;
+  apartment: string;
+  relatives?: string;
+  cleaner?: string;
+};
+
+export const criarMorador = async (novoMorador: criarMoradorInput): Promise<boolean> => {
+  try {
+    await api.post('/residents', novoMorador);
+    return true;
+  } catch (error) {
+    console.error("Erro ao criar morador:", error);
+    return false;
+  }
+};
+
 export const deletarMorador = async (id: number): Promise<boolean> => {
   try {
     await api.delete(`/residents/${id}`);
