@@ -10,6 +10,20 @@ const api = axios.create({
   },
 });
 
+export const realizarLogin = async (username: string, password: string): Promise<string | null> => {
+  try {
+    const response = await api.post('/login', { username, password });
+    const token = response.data.token;
+
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    return token;
+  } catch (error) {
+    console.error("Erro ao realizar login:", error);
+    return null;
+  }
+};
+
 export const buscarMoradores = async (): Promise<Morador[]> => {
   try {
     const response = await api.get('/residents');

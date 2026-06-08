@@ -2,13 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, TextInput, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Importações dos nossos novos arquivos organizados
+// Importações dos arquivos organizados (Adicionado o Login aqui)
 import { Morador } from './src/types/morador';
 import { buscarMoradores } from './src/services/api';
 import { CardMorador } from './src/components/CardMorador';
 import CadastroMorador from './src/components/CadastroMorador';
+import Login from './src/components/Login'; // <--- IMPORTAÇÃO DA SUA NOVA TELA
 
 export default function App() {
+  // --- NOVO ESTADO: Guardião do Token JWT ---
+  const [token, setToken] = useState<string | null>(null);
+
   const [pesquisaMorador, setPesquisaMorador] = useState<string>('');
   const [listaMoradores, setListaMoradores] = useState<Morador[]>([]);
   const [carregando, setCarregando] = useState<boolean>(true);
@@ -28,11 +32,12 @@ export default function App() {
     }
   }, []);
 
-  
+  // AJUSTE: O useEffect agora só dispara as buscas se o operador estiver logado (com token)
   useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
-
+    if (token) {
+      carregarDados();
+    }
+  }, [token, carregarDados]);
 
   const aoAtualizar = () => {
     setAtualizando(true); 
@@ -48,9 +53,23 @@ export default function App() {
     ? listaMoradores.filter(item => item.Morador?.toLowerCase().includes(pesquisaMorador.toLowerCase()))
     : [];
 
+  // --- CONTROLE DE FLUXO ALTERADO ---
+  // Se o token for nulo, barra a visualização e renderiza o seu componente Login.tsx
+  if (!token) {
+    return <Login onLoginSuccess={(tokenGerado) => setToken(tokenGerado)} />;
+  }
+
+  // Se houver um token, o React Native renderiza todo o Dashboard abaixo normalmente
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Portaria Inteligente</Text>
+      
+      {/* HEADER DO DASHBOARD COM BOTÃO DE LOGOUT */}
+      <View style={styles.headerDashboard}>
+        <Text style={styles.title}>Portaria Inteligente</Text>
+        <TouchableOpacity style={styles.botaoSair} onPress={() => setToken(null)}>
+          <Text style={styles.textSair}>Sair</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.abasContainer}>
         <TouchableOpacity 
@@ -120,12 +139,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
   },
+  headerDashboard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
     color: '#333',
+  },
+  botaoSair: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 6,
+  },
+  textSair: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   inputPesquisa: {
     backgroundColor: '#F0F0F0',
@@ -137,7 +171,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 16,
   },
-  // NOVOS ESTILOS: Para controlar as abas superiores
   abasContainer: {
     flexDirection: 'row',
     backgroundColor: '#F5F5F5',
